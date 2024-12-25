@@ -60,7 +60,6 @@ if __name__ == "__main__":
 ============================================================================    
           """))
     print()
-    print()
     args = parse_arguments()
     symbols = args.symbols
 
