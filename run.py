@@ -1,8 +1,10 @@
 import logging
 import traceback
+from turtle import title
 import warnings
-from config import ALLOWED_SYMBOLS
+from config import ALLOWED_SYMBOLS, TITLE
 from lib.tools import *
+from misc.utils import print_title
 from providers import fetch
 import argparse
 
@@ -45,7 +47,7 @@ def parse_arguments():
         '--symbols',
         type=validate_symbols,
         required=True,
-        help='Comma-separated list of symbols. Allowed symbols are BTCUSDT, ETHUSDT, SOLUSDT.'
+        help='Comma-separated list of symbols. Allowed symbols are BTCUSDT,ETHUSDT,SOLUSDT.'
     )
 
     args = parser.parse_args()
@@ -53,10 +55,9 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
+    print_title(TITLE)
+    # TODO: Pass strategies , timeframes, look back as a json config that can be read when launching the script
 
-#TODO: Pass strategies , timeframes, look back as a json config that can be read when launching the script
-
-    
     args = parse_arguments()
     symbols = args.symbols
 

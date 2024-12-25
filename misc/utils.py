@@ -30,11 +30,13 @@ def fetch_csv_as_dataframe(url, new_columns=None):
 
         # Convert the text content of the response to a DataFrame
         csv_data = response.text
-        df = pd.read_csv(StringIO(csv_data), skiprows=1)  # Skip the first row with comments
+        # Skip the first row with comments
+        df = pd.read_csv(StringIO(csv_data), skiprows=1)
 
         if new_columns:
             if len(new_columns) != len(df.columns):
-                raise ValueError("Length of new_column_names must match the number of columns in the DataFrame")
+                raise ValueError(
+                    "Length of new_column_names must match the number of columns in the DataFrame")
             df.columns = new_columns
 
         return df
@@ -45,20 +47,19 @@ def fetch_csv_as_dataframe(url, new_columns=None):
         print(f"Error parsing CSV data: {e}")
         return None
 
+
 def print_title(title):
     """_summary_
 
     Args:
         title (_type_): _description_
     """
-    print(color_text("""
-============================================================================
-                Advanced Crypto Trading Bot (Offline Edition)                                             
-============================================================================    
-          """))
+    print(color_text(title))
     print()
-    
+
 # For color-coded printing (ANSI escape codes)
+
+
 def color_text(text, color_code=32):  # default green=32
     """
     color_code can be:
