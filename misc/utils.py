@@ -45,3 +45,24 @@ def fetch_csv_as_dataframe(url, new_columns=None):
         print(f"Error parsing CSV data: {e}")
         return None
 
+def print_title(title):
+    """_summary_
+
+    Args:
+        title (_type_): _description_
+    """
+    print(color_text("""
+============================================================================
+                Advanced Crypto Trading Bot (Offline Edition)                                             
+============================================================================    
+          """))
+    print()
+    
+# For color-coded printing (ANSI escape codes)
+def color_text(text, color_code=32):  # default green=32
+    """
+    color_code can be:
+      30=black, 31=red, 32=green, 33=yellow, 34=blue, 35=magenta,
+      36=cyan, 37=white, etc.
+    """
+    return f"\033[{color_code}m{text}\033[0m"

@@ -54,12 +54,9 @@ def parse_arguments():
 
 if __name__ == "__main__":
 
-    print(color_text("""
-============================================================================
-                Advanced Crypto Trading Bot (Offline Edition)                                             
-============================================================================    
-          """))
-    print()
+#TODO: Pass strategies , timeframes, look back as a json config that can be read when launching the script
+
+    
     args = parse_arguments()
     symbols = args.symbols
 
