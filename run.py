@@ -98,7 +98,6 @@ if __name__ == "__main__":
             logger.info(f"Final capital: {final_cap:.2f}, trades: {len(trades_pnl)}")
 
             print_monthly_suggestion(symbol, df_merged, days_back)
-            print_monthly_suggestion_log(symbol, df_merged, days_back)
 
         except Exception as e:
             logger.error(f"Main execution error: {e}")
