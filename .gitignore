@@ -15,7 +15,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+lib/*
 lib64/
 parts/
 sdist/
@@ -170,3 +170,4 @@ cython_debug/
 *.iml
 *.log
 enhancements.md
+.vscode/*

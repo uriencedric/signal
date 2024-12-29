@@ -1,9 +1,5 @@
-from datetime import datetime, timedelta
-
 import pandas as pd
-import requests
-import typing
-from misc.constants import CRYPTO_DD_BASE_URL, COINGECKO_BASE_URL
+from misc.constants import CRYPTO_DD_BASE_URL
 from misc.utils import fetch_csv_as_dataframe
 
 
@@ -16,13 +12,13 @@ def get_provider(provider):
     Returns: (function): our provider func with args 
     """
     providers = {
-        "crypto_dd": _crypto_dd
+        "crypto_data_download": crypto_data_download
     }
 
     return providers.get(provider, None)
 
 
-def _crypto_dd(symbol="BTCUSDT", timeframe="d"):
+def crypto_data_download(symbol="BTCUSDT", timeframe="d"):
     """
     Fetch data to the ohlcv format. (binance)
 
