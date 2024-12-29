@@ -1,13 +1,9 @@
-import logging
-import traceback
-from turtle import title
-import warnings
+import argparse
+
 from config import ALLOWED_SYMBOLS, TITLE
 from lib.tools import *
 from misc.utils import print_title
 from providers import fetch
-import argparse
-
 
 # ===== Setup Logger =====
 logging.basicConfig(
