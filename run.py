@@ -1,4 +1,5 @@
 import argparse
+import traceback
 
 from config import ALLOWED_SYMBOLS, TITLE
 from lib.tools import *
@@ -64,7 +65,7 @@ if __name__ == "__main__":
             add_indicators(df_daily)
 
             df_4h_data = provider(symbol, "1h")
-            df_4h = fetch.load_data(df_4h_data, "4h")
+            df_4h = fetch.load_data(df_4h_data)
             add_indicators(df_4h)
 
             df_daily, df_4h = align_start_date(df_daily, df_4h)
@@ -77,7 +78,7 @@ if __name__ == "__main__":
             # 3) Strategy config
             # Turn off compounding if you want to keep final capital realistic
             config = StrategyConfig(
-                initial_capital=10000,
+                initial_capital=1000,
                 risk_per_trade=0.01,
                 trailing_stop_mult=1.5,
                 partial_profit_mult=1.0,
