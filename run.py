@@ -97,7 +97,7 @@ if __name__ == "__main__":
             final_cap, trades_pnl = backtest_advanced(df_merged, model_ensemble, config)
             logger.info(f"Final capital: {final_cap:.2f}, trades: {len(trades_pnl)}")
 
-            print_monthly_suggestion(symbol, df_merged, days_back)
+            print_monthly_suggestion(config, model_ensemble, symbol, df_merged, days_back)
 
         except Exception as e:
             logger.error(f"Main execution error: {e}")
