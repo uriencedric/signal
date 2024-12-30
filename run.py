@@ -20,7 +20,6 @@ logger.setLevel(logging.INFO)
 warnings.filterwarnings("ignore")
 
 
-
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Process some cryptocurrency symbols.")
@@ -48,11 +47,12 @@ def load_config(config_path):
     with open(config_path, 'r') as file:
         return yaml.safe_load(file)
 
+
 if __name__ == "__main__":
     print_title(TITLE)
     args = parse_arguments()
     config_data = load_config(args.config)
-    
+
     strategy_config = config_data.get("strategy_config", {})
     symbols = config_data["runtime"]["symbols"].split(",")
     days_back = config_data["runtime"]["days_back"]
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     ml_test_size = config_data["runtime"]["ml_test_size"]
     timeframe_daily = config_data["runtime"]["timeframe_daily"]
     timeframe_hourly = config_data["runtime"]["timeframe_hourly"]
-    
+
     config = StrategyConfig(
         initial_capital=strategy_config.get("initial_capital", 1000),
         risk_per_trade=strategy_config.get("risk_per_trade", 0.01),
@@ -84,20 +84,14 @@ if __name__ == "__main__":
             provider = fetch.get_provider(provider=_provider)
             df_daily = fetch.load_data(provider(symbol, timeframe_daily))
             add_indicators(df_daily)
-            
-            df_1h = fetch.load_data(provider(symbol, timeframe_hourly))
-            add_indicators(df_1h)
 
-            df_daily, df_1h = align_start_date(df_daily, df_1h)
-            df_merged = merge_timeframes(df_daily, df_1h, suffix_4h=timeframe_suffix)
-
-            df_ml, features = prepare_ml_dataset(df_merged)
+            df_ml, features = prepare_ml_dataset(df_daily)
             model_ensemble = train_ensemble_model(df_ml, features, test_size=ml_test_size)
 
-            final_cap, trades_pnl = backtest_advanced(df_merged, model_ensemble, config)
+            final_cap, trades_pnl = backtest_advanced(df_daily, model_ensemble, config)
             logger.info(f"Final capital: {final_cap:.2f}, trades: {len(trades_pnl)}")
 
-            print_monthly_suggestion(config, model_ensemble, symbol, df_merged, days_back)
+            print_monthly_suggestion(config, model_ensemble, symbol, df_daily, days_back)
 
         except Exception as e:
             logger.error(f"Main execution error: {e}")
