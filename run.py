@@ -70,7 +70,7 @@ if __name__ == "__main__":
         partial_profit_fraction=strategy_config.get("partial_profit_fraction", 0.5),
         max_drawdown=strategy_config.get("max_drawdown", 0.2),
         enable_pyramiding=strategy_config.get("enable_pyramiding", True),
-        pyramid_increment_rvol=strategy_config.get("pyramid_increment_rvol", 1.0),
+        # pyramid_increment_rvol=strategy_config.get("pyramid_increment_rvol", 1.0),
         pyramid_max_layers=strategy_config.get("pyramid_max_layers", 2),
         ensemble_threshold=strategy_config.get("ensemble_threshold", 2),
         fee_pct=strategy_config.get("fee_pct", 0.1),
@@ -84,14 +84,22 @@ if __name__ == "__main__":
             provider = fetch.get_provider(provider=_provider)
             df_daily = fetch.load_data(provider(symbol, timeframe_daily))
             add_indicators(df_daily)
+            df_daily.dropna(inplace=True)
+            # Prepare ML dataset
+            X_res, y_res, features = prepare_ml_dataset(df_daily, shift_days=days_back)
 
-            df_ml, features = prepare_ml_dataset(df_daily)
-            model_ensemble = train_ensemble_model(df_ml, features, test_size=ml_test_size)
+            # Train ML model
+            ensemble_model = train_ensemble_model(X_res, y_res, test_size=ml_test_size)
 
-            final_cap, trades_pnl = backtest_advanced(df_daily, model_ensemble, config)
-            logger.info(f"Final capital: {final_cap:.2f}, trades: {len(trades_pnl)}")
+            # Train Anomaly Detector
+            anomaly_model, df_daily = train_anomaly_detector(df_daily, features)
 
-            print_monthly_suggestion(config, model_ensemble, symbol, df_daily, days_back)
+            # Perform Backtest
+            backtest_results = backtest_advanced(df_daily, ensemble_model, config)
+            logger.info(f"Final Capital after Backtest: {backtest_results['final_capital']:.2f}")
+            logger.info(f"Total Trades: {backtest_results['trades_count']}")
+
+            print_monthly_suggestion(config, ensemble_model, symbol, df_daily, days_back)
 
         except Exception as e:
             logger.error(f"Main execution error: {e}")
