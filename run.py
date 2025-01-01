@@ -84,7 +84,11 @@ if __name__ == "__main__":
             provider = fetch.get_provider(provider=_provider)
             df_daily = fetch.load_data(provider(symbol, timeframe_daily))
             add_indicators(df_daily)
+            # df noise reduction
             df_daily.dropna(inplace=True)
+            df_daily = df_daily.drop('upper_shadow', axis=1)
+            df_daily = df_daily.drop('lower_shadow', axis=1)
+            df_daily = df_daily.drop('body', axis=1)
             # Prepare ML dataset
             X_res, y_res, features = prepare_ml_dataset(df_daily, shift_days=days_back)
 
