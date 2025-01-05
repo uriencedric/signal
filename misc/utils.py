@@ -3,7 +3,7 @@ from io import StringIO
 
 import pandas as pd
 import requests
-
+import yaml
 
 def convert_timestamp_millis_to_date(timestamp_ms):
     return datetime.fromtimestamp(timestamp_ms / 1000)
@@ -59,7 +59,6 @@ def print_title(title):
 
 # For color-coded printing (ANSI escape codes)
 
-
 def color_text(text, color_code=32):  # default green=32
     """
     color_code can be:
@@ -67,3 +66,15 @@ def color_text(text, color_code=32):  # default green=32
       36=cyan, 37=white, etc.
     """
     return f"\033[{color_code}m{text}\033[0m"
+
+def load_config(config_path):
+    """LOad a yaml config file
+
+    Args:
+        config_path (_type_): _description_
+
+    Returns:
+        (dict): our file represented as a dict
+    """
+    with open(config_path, 'r') as file:
+        return yaml.safe_load(file)

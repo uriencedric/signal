@@ -1,12 +1,12 @@
 import argparse
 import traceback
 
+import ccxt
 import yaml
 
 from config import TITLE
 from lib.tools import *
-from misc.utils import print_title
-from providers import fetch
+from misc.utils import print_title, load_config
 
 # ===== Setup Logger =====
 logging.basicConfig(
@@ -34,20 +34,6 @@ def parse_arguments():
     args = parser.parse_args()
     return args
 
-
-def load_config(config_path):
-    """LOad a yaml config file
-
-    Args:
-        config_path (_type_): _description_
-
-    Returns:
-        (dict): our file represented as a dict
-    """
-    with open(config_path, 'r') as file:
-        return yaml.safe_load(file)
-
-
 if __name__ == "__main__":
     print_title(TITLE)
     args = parse_arguments()
@@ -57,7 +43,6 @@ if __name__ == "__main__":
     symbols = config_data["runtime"]["symbols"].split(",")
     days_back = config_data["runtime"]["days_back"]
     timeframe_suffix = config_data["runtime"]["timeframe_suffix"]
-    _provider = config_data["runtime"]["provider"]
     ml_test_size = config_data["runtime"]["ml_test_size"]
     timeframe_daily = config_data["runtime"]["timeframe_daily"]
     timeframe_hourly = config_data["runtime"]["timeframe_hourly"]
@@ -70,7 +55,7 @@ if __name__ == "__main__":
         partial_profit_fraction=strategy_config.get("partial_profit_fraction", 0.5),
         max_drawdown=strategy_config.get("max_drawdown", 0.2),
         enable_pyramiding=strategy_config.get("enable_pyramiding", True),
-        # pyramid_increment_rvol=strategy_config.get("pyramid_increment_rvol", 1.0),
+        pyramid_increment_atr=strategy_config.get("pyramid_increment_atr", 1.0),
         pyramid_max_layers=strategy_config.get("pyramid_max_layers", 2),
         ensemble_threshold=strategy_config.get("ensemble_threshold", 2),
         fee_pct=strategy_config.get("fee_pct", 0.1),
@@ -81,8 +66,43 @@ if __name__ == "__main__":
 
     for symbol in symbols:
         try:
-            provider = fetch.get_provider(provider=_provider)
-            df_daily = fetch.load_data(provider(symbol, timeframe_daily))
+            exchange = ccxt.binance()
+
+            # Fetch OHLCV data for BTC/USDT
+            timeframe = '1d'  # 1-day interval
+            limit = 1000       # Number of data points to fetch
+
+            all_data = []
+
+            # Initialize starting point for historical data
+            start_time = exchange.parse8601('2020-01-01T00:00:00Z')
+
+            while True:
+                data = exchange.fetch_ohlcv(symbol, timeframe, since=start_time, limit=limit)
+                if not data:
+                    break
+                all_data.extend(data)
+                start_time = data[-1][0] + 1  # Move to the next timestamp
+
+                # Break the loop if you have enough data or hit the desired date range
+                if len(data) < limit:
+                    break
+            # Convert to DataFrame
+            df_daily = pd.DataFrame(all_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+            df_daily['timestamp'] = pd.to_datetime(df_daily['timestamp'], unit='ms')
+            df_daily = df_daily.sort_values(by="timestamp")
+            df_daily.rename(columns={
+                'timestamp': 'Date',
+                'symbol': 'Symbol',
+                'open': 'Open',
+                'high': 'High',
+                'low': 'Low',
+                'close': 'Close',
+                'volume': 'Volume'
+            }, inplace=True)
+            df_daily = df_daily.set_index('Date')
+            # Convert timestamp to datetime
+
             add_indicators(df_daily)
             # df noise reduction
             df_daily.dropna(inplace=True)
@@ -99,9 +119,9 @@ if __name__ == "__main__":
             anomaly_model, df_daily = train_anomaly_detector(df_daily, features)
 
             # Perform Backtest
-            backtest_results = backtest_advanced(df_daily, ensemble_model, config)
-            logger.info(f"Final Capital after Backtest: {backtest_results['final_capital']:.2f}")
-            logger.info(f"Total Trades: {backtest_results['trades_count']}")
+            capital, trades_pnl = backtest_advanced(df_daily, ensemble_model, config)
+            logger.info(f"Final Capital after Backtest: {capital:.2f}")
+            logger.info(f"Total Trades: {len(trades_pnl)}")
 
             print_monthly_suggestion(config, ensemble_model, symbol, df_daily, days_back)
 
