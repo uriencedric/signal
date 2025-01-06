@@ -46,6 +46,9 @@ if __name__ == "__main__":
     ml_test_size = config_data["runtime"]["ml_test_size"]
     timeframe_daily = config_data["runtime"]["timeframe_daily"]
     timeframe_hourly = config_data["runtime"]["timeframe_hourly"]
+    
+    if days_back > 7:
+        raise ValueError("days_back should be less than 7")
 
     config = StrategyConfig(
         initial_capital=strategy_config.get("initial_capital", 1000),
@@ -106,9 +109,6 @@ if __name__ == "__main__":
             add_indicators(df_daily)
             # df noise reduction
             df_daily.dropna(inplace=True)
-            df_daily = df_daily.drop('upper_shadow', axis=1)
-            df_daily = df_daily.drop('lower_shadow', axis=1)
-            df_daily = df_daily.drop('body', axis=1)
             # Prepare ML dataset
             X_res, y_res, features = prepare_ml_dataset(df_daily, shift_days=days_back)
 
