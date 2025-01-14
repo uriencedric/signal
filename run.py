@@ -18,8 +18,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 warnings.filterwarnings("ignore")
 
-TITLE = 
-"""
+TITLE = """
 ============================================================================
                 Advanced Crypto Trading Bot (Offline Edition)                                             
 ============================================================================    
