@@ -4,13 +4,12 @@ import traceback
 import ccxt
 import yaml
 
-from config import TITLE
 from lib.tools import *
 from misc.utils import print_title, load_config
 
 # ===== Setup Logger =====
 logging.basicConfig(
-    filename='cryptobot.log',
+    filename='app.log',
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
@@ -19,6 +18,12 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 warnings.filterwarnings("ignore")
 
+TITLE = 
+"""
+============================================================================
+                Advanced Crypto Trading Bot (Offline Edition)                                             
+============================================================================    
+"""
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -123,7 +128,7 @@ if __name__ == "__main__":
             logger.info(f"Final Capital after Backtest: {capital:.2f}")
             logger.info(f"Total Trades: {len(trades_pnl)}")
 
-            print_monthly_suggestion(config, ensemble_model, symbol, df_daily, days_back)
+            print_monthly_suggestion(config, symbol, df_daily, days_back)
 
         except Exception as e:
             logger.error(f"Main execution error: {e}")
