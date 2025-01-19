@@ -51,7 +51,7 @@ if __name__ == "__main__":
     timeframe_daily = config_data["runtime"]["timeframe_daily"]
     timeframe_hourly = config_data["runtime"]["timeframe_hourly"]
     
-    if days_back > 30:
+    if days_back > 30 :
         raise ValueError("days_back should be less than 30")
 
     config = StrategyConfig(
