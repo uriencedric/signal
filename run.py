@@ -51,8 +51,8 @@ if __name__ == "__main__":
     timeframe_daily = config_data["runtime"]["timeframe_daily"]
     timeframe_hourly = config_data["runtime"]["timeframe_hourly"]
     
-    if days_back > 7:
-        raise ValueError("days_back should be less than 7")
+    if days_back > 30:
+        raise ValueError("days_back should be less than 30")
 
     config = StrategyConfig(
         initial_capital=strategy_config.get("initial_capital", 1000),
