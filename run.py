@@ -24,34 +24,20 @@ TITLE = """
 ============================================================================    
 """
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description="Process some cryptocurrency symbols.")
-
-    parser.add_argument(
-        '--config',
-        type=None,
-        required=True,
-        help='the path to your config file'
-    )
-
-    args = parser.parse_args()
-    return args
-
 if __name__ == "__main__":
     print_title(TITLE)
-    args = parse_arguments()
-    config_data = load_config(args.config)
+    config_data = load_config("config.yaml")
 
     strategy_config = config_data.get("strategy_config", {})
     symbols = config_data["runtime"]["symbols"].split(",")
     days_back = config_data["runtime"]["days_back"]
+    threshold = config_data["runtime"]["threshold"]
     timeframe_suffix = config_data["runtime"]["timeframe_suffix"]
     ml_test_size = config_data["runtime"]["ml_test_size"]
     timeframe_daily = config_data["runtime"]["timeframe_daily"]
     timeframe_hourly = config_data["runtime"]["timeframe_hourly"]
     
-    if days_back > 30 :
+    if days_back > threshold :
         raise ValueError("days_back should be less than 30")
 
     config = StrategyConfig(
@@ -74,23 +60,18 @@ if __name__ == "__main__":
     for symbol in symbols:
         try:
             exchange = ccxt.binance()
-
             # Fetch OHLCV data for BTC/USDT
             timeframe = '1d'  # 1-day interval
             limit = 1000       # Number of data points to fetch
-
             all_data = []
-
             # Initialize starting point for historical data
             start_time = exchange.parse8601('2020-01-01T00:00:00Z')
-
             while True:
                 data = exchange.fetch_ohlcv(symbol, timeframe, since=start_time, limit=limit)
                 if not data:
                     break
                 all_data.extend(data)
                 start_time = data[-1][0] + 1  # Move to the next timestamp
-
                 # Break the loop if you have enough data or hit the desired date range
                 if len(data) < limit:
                     break
@@ -117,7 +98,7 @@ if __name__ == "__main__":
             X_res, y_res, features = prepare_ml_dataset(df_daily, shift_days=days_back)
 
             # Train ML model
-            ensemble_model = train_ensemble_model(X_res, y_res, test_size=ml_test_size)
+            ensemble_model, acc, report = train_ensemble_model(X_res, y_res, test_size=ml_test_size)
 
             # Train Anomaly Detector
             anomaly_model, df_daily = train_anomaly_detector(df_daily, features)
@@ -127,7 +108,7 @@ if __name__ == "__main__":
             logger.info(f"Final Capital after Backtest: {capital:.2f}")
             logger.info(f"Total Trades: {len(trades_pnl)}")
 
-            print_monthly_suggestion(config, symbol, df_daily, days_back)
+            print_monthly_suggestion(config, symbol, df_daily, acc, report, days_back)
 
         except Exception as e:
             logger.error(f"Main execution error: {e}")
