@@ -4,6 +4,7 @@ import traceback
 import ccxt
 import yaml
 
+from lib.future import analyze_market_sentiment, plot_data
 from lib.tools import *
 from misc.utils import print_title, load_config
 
@@ -23,6 +24,12 @@ TITLE = """
                 Advanced Crypto Trading Bot (Offline Edition)                                             
 ============================================================================    
 """
+
+
+def rewrite_symbol_for_future(symbol):
+    if symbol.endswith("BTC/USDT"):
+        return symbol.replace("/", "").replace("-", "").replace("BTCUSDT", "XBTUSDTM")
+    return symbol.replace("/", "").replace("-", "").replace("USDT", "USDTM")
 
 if __name__ == "__main__":
     print_title(TITLE)
@@ -59,6 +66,12 @@ if __name__ == "__main__":
 
     for symbol in symbols:
         try:
+            
+            _symbol = rewrite_symbol_for_future(symbol)
+            
+            analyze_market_sentiment(_symbol)
+            plot_data(symbol)
+            
             exchange = ccxt.binance()
             # Fetch OHLCV data for BTC/USDT
             timeframe = '1d'  # 1-day interval
@@ -109,7 +122,8 @@ if __name__ == "__main__":
             logger.info(f"Total Trades: {len(trades_pnl)}")
 
             print_monthly_suggestion(config, symbol, df_daily, acc, report, days_back)
-
+            print()
+            
         except Exception as e:
             logger.error(f"Main execution error: {e}")
             print(traceback.format_exc())
